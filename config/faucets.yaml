@@ -1,0 +1,329 @@
+# Multi-chain Faucet Configuration
+# This file defines faucet endpoints, cooldowns, limits, and captcha requirements
+# for automated testnet token acquisition across multiple blockchain networks
+
+chains:
+  # ==================== Ethereum Testnets ====================
+  ethereum_sepolia:
+    name: "Ethereum Sepolia"
+    chain_id: 11155111
+    native_token: "ETH"
+    faucets:
+      - name: "Alchemy Sepolia Faucet"
+        url: "https://sepoliafaucet.com"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "0.5"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+      - name: "Infura Sepolia Faucet"
+        url: "https://www.infura.io/faucet/sepolia"
+        api_endpoint: "/api/claim"
+        method: "POST"
+        amount: "0.5"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 2
+
+      - name: "Chainstack Sepolia Faucet"
+        url: "https://faucet.chainstack.com/sepolia-faucet"
+        api_endpoint: "/api/v1/faucet"
+        method: "POST"
+        amount: "0.1"
+        cooldown_hours: 12
+        daily_limit: 2
+        requires_captcha: false
+        enabled: true
+        priority: 3
+
+  ethereum_goerli:
+    name: "Ethereum Goerli"
+    chain_id: 5
+    native_token: "ETH"
+    faucets:
+      - name: "Alchemy Goerli Faucet"
+        url: "https://goerlifaucet.com"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "0.5"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+  # ==================== Polygon ====================
+  polygon_amoy:
+    name: "Polygon Amoy Testnet"
+    chain_id: 80002
+    native_token: "MATIC"
+    faucets:
+      - name: "Polygon Faucet"
+        url: "https://faucet.polygon.technology"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "1.0"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+      - name: "Alchemy Polygon Faucet"
+        url: "https://www.alchemy.com/faucets/polygon-amoy"
+        api_endpoint: "/api/claim"
+        method: "POST"
+        amount: "0.5"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        enabled: true
+        priority: 2
+
+  # ==================== Arbitrum ====================
+  arbitrum_sepolia:
+    name: "Arbitrum Sepolia"
+    chain_id: 421614
+    native_token: "ETH"
+    faucets:
+      - name: "Arbitrum Sepolia Faucet"
+        url: "https://faucet.quicknode.com/arbitrum/sepolia"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "0.1"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+      - name: "L2Faucet Arbitrum"
+        url: "https://l2faucet.com/arbitrum"
+        api_endpoint: "/api/claim"
+        method: "POST"
+        amount: "0.05"
+        cooldown_hours: 12
+        daily_limit: 2
+        requires_captcha: false
+        enabled: true
+        priority: 2
+
+  arbitrum_goerli:
+    name: "Arbitrum Goerli"
+    chain_id: 421613
+    native_token: "ETH"
+    faucets:
+      - name: "Arbitrum Goerli Faucet"
+        url: "https://faucet.quicknode.com/arbitrum/goerli"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "0.1"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+  # ==================== Base ====================
+  base_sepolia:
+    name: "Base Sepolia"
+    chain_id: 84532
+    native_token: "ETH"
+    faucets:
+      - name: "Base Sepolia Faucet"
+        url: "https://faucet.quicknode.com/base/sepolia"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "0.1"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+      - name: "Coinbase Base Faucet"
+        url: "https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet"
+        api_endpoint: "/api/claim"
+        method: "POST"
+        amount: "0.05"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        enabled: true
+        priority: 2
+
+  # ==================== BNB Chain ====================
+  bnb_testnet:
+    name: "BNB Smart Chain Testnet"
+    chain_id: 97
+    native_token: "BNB"
+    faucets:
+      - name: "BNB Testnet Faucet"
+        url: "https://testnet.bnbchain.org/faucet-smart"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "0.5"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+      - name: "Moralis BNB Faucet"
+        url: "https://moralis.io/faucets/bsc-testnet"
+        api_endpoint: "/api/claim"
+        method: "POST"
+        amount: "0.1"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        enabled: true
+        priority: 2
+
+  # ==================== Avalanche ====================
+  avalanche_fuji:
+    name: "Avalanche Fuji C-Chain"
+    chain_id: 43113
+    native_token: "AVAX"
+    faucets:
+      - name: "Avalanche Official Faucet"
+        url: "https://faucet.avax.network"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "2.0"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+      - name: "ChainLink Fuji Faucet"
+        url: "https://faucets.chain.link/fuji"
+        api_endpoint: "/api/claim"
+        method: "POST"
+        amount: "1.0"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        enabled: true
+        priority: 2
+
+  # ==================== Fantom ====================
+  fantom_testnet:
+    name: "Fantom Testnet"
+    chain_id: 4002
+    native_token: "FTM"
+    faucets:
+      - name: "Fantom Testnet Faucet"
+        url: "https://faucet.fantom.network"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "10.0"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 1
+
+  # ==================== Solana ====================
+  solana_devnet:
+    name: "Solana Devnet"
+    native_token: "SOL"
+    faucets:
+      - name: "Solana Official Devnet Faucet"
+        url: "https://faucet.solana.com"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "2.0"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        enabled: true
+        priority: 1
+
+      - name: "QuickNode Solana Faucet"
+        url: "https://faucet.quicknode.com/solana/devnet"
+        api_endpoint: "/api/claim"
+        method: "POST"
+        amount: "0.5"
+        cooldown_hours: 12
+        daily_limit: 2
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        enabled: true
+        priority: 2
+
+  solana_testnet:
+    name: "Solana Testnet"
+    native_token: "SOL"
+    faucets:
+      - name: "Solana Official Testnet Faucet"
+        url: "https://faucet.solana.com"
+        api_endpoint: "/api/faucet"
+        method: "POST"
+        amount: "1.0"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        enabled: true
+        priority: 1
+
+  # ==================== Aptos ====================
+  aptos_testnet:
+    name: "Aptos Testnet"
+    native_token: "APT"
+    faucets:
+      - name: "Aptos Official Faucet"
+        url: "https://faucet.testnet.aptoslabs.com"
+        api_endpoint: "/mint"
+        method: "POST"
+        amount: "100.0"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        enabled: true
+        priority: 1
+
+  # ==================== Algorand ====================
+  algorand_testnet:
+    name: "Algorand Testnet"
+    native_token: "ALGO"
+    faucets:
+      - name: "Algorand Dispenser"
+        url: "https://dispenser.testnet.aws.algodev.network"
+        api_endpoint: "/api/dispense"
+        method: "POST"
+        amount: "10.0"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        enabled: true
+        priority: 1
+
+# Global faucet settings
+global_settings:
+  max_concurrent_requests: 5
+  request_timeout: 60  # Increased to 60 seconds for slower faucets
+  retry_max_attempts: 3
+  retry_backoff_min: 5
+  retry_backoff_max: 60
+  rate_limit_cooldown: 300
+  enable_jitter: true
+  jitter_min: 1
+  jitter_max: 30
