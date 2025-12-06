@@ -23,11 +23,12 @@ load_dotenv()
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils.database import init_db, get_db_session, Wallet
+from utils.database import init_db, get_db_session, Wallet, AirdropClaim
 from utils.logging_config import configure_logging, get_logger
 from modules.wallet_manager import WalletManager
 from modules.faucet_automation import FaucetOrchestrator
 from modules.action_pipeline import ActionPipeline
+from modules.airdrop_claimer import AirdropClaimer, AirdropRegistry
 
 console = Console()
 logger = get_logger(__name__)
@@ -327,6 +328,15 @@ def stats():
         successful_actions = session.query(WalletAction).filter(
             WalletAction.status == 'success'
         ).count()
+        
+        # Airdrop stats
+        total_claims = session.query(AirdropClaim).count()
+        successful_claims = session.query(AirdropClaim).filter(
+            AirdropClaim.status == 'claimed'
+        ).count()
+        eligible_claims = session.query(AirdropClaim).filter(
+            AirdropClaim.status == 'eligible'
+        ).count()
     
     # Display stats
     table = Table(title="Statistics")
@@ -339,10 +349,119 @@ def stats():
     table.add_row("Successful Faucet Claims", str(successful_requests))
     table.add_row("Total Actions", str(total_actions))
     table.add_row("Successful Actions", str(successful_actions))
+    table.add_row("Airdrop Claims Checked", str(total_claims))
+    table.add_row("Airdrops Eligible", str(eligible_claims))
+    table.add_row("Airdrops Claimed", str(successful_claims))
     
     console.print("\n")
     console.print(table)
     console.print("\n")
+
+
+@cli.command()
+def list_airdrops():
+    """List all configured airdrops and their status."""
+    registry = AirdropRegistry()
+    airdrops = registry.get_all_airdrops()
+    
+    if not airdrops:
+        console.print("[yellow]No airdrops configured.[/yellow]")
+        return
+    
+    table = Table(title="Configured Airdrops")
+    table.add_column("Name", style="cyan")
+    table.add_column("Chain", style="yellow")
+    table.add_column("Status", style="magenta")
+    table.add_column("Claim Method", style="blue")
+    table.add_column("Min Actions", style="green")
+    table.add_column("Enabled", style="white")
+    
+    for name, config in airdrops.items():
+        status = config.get('status', 'unknown')
+        status_color = {
+            'claimable': 'green',
+            'upcoming': 'yellow',
+            'ended': 'red'
+        }.get(status, 'white')
+        
+        enabled = "✓" if config.get('enabled', True) else "✗"
+        
+        table.add_row(
+            config.get('name', name),
+            config.get('chain', 'unknown'),
+            f"[{status_color}]{status}[/{status_color}]",
+            config.get('claim_method', 'unknown'),
+            str(config.get('min_actions', 0)),
+            enabled
+        )
+    
+    console.print("\n")
+    console.print(table)
+    console.print("\n")
+
+
+@cli.command()
+@click.option('--airdrop', help='Specific airdrop to check/claim')
+@click.option('--check-only', is_flag=True, help='Only check eligibility, do not claim')
+@click.option('--shard', type=int, help='Only process specific shard')
+@click.option('--chain', help='Filter by chain')
+@click.option('--limit', type=int, help='Limit number of wallets to process')
+def claim_airdrops(airdrop, check_only, shard, chain, limit):
+    """Check eligibility and claim available airdrops."""
+    wallet_manager = WalletManager()
+    
+    # Get wallets
+    wallets = wallet_manager.get_wallets(chain=chain, shard_id=shard)
+    
+    if not wallets:
+        console.print("[red]No wallets found.[/red]")
+        return
+    
+    if limit:
+        wallets = wallets[:limit]
+    
+    mode = "Checking eligibility" if check_only else "Claiming airdrops"
+    console.print(f"\n[bold]{mode} for {len(wallets)} wallets...[/bold]")
+    
+    if airdrop:
+        console.print(f"Airdrop: {airdrop}")
+    else:
+        console.print("All active airdrops")
+    
+    if chain:
+        console.print(f"Chain: {chain}")
+    if shard is not None:
+        console.print(f"Shard: {shard}")
+    
+    console.print()
+    
+    # Run claimer
+    claimer = AirdropClaimer()
+    
+    async def run_claims():
+        stats = await claimer.check_and_claim_airdrops(
+            wallets=wallets,
+            airdrop_name=airdrop,
+            check_only=check_only,
+            shard_id=shard
+        )
+        return stats
+    
+    stats = asyncio.run(run_claims())
+    
+    # Display results
+    console.print("\n[bold]Results:[/bold]")
+    console.print(f"Total wallets: {stats['total_wallets']}")
+    console.print(f"Total checks: {stats['total_checks']}")
+    console.print(f"Eligible: [green]{stats['eligible']}[/green]")
+    console.print(f"Ineligible: [yellow]{stats['ineligible']}[/yellow]")
+    
+    if not check_only:
+        console.print(f"Claimed: [green]{stats['claimed']}[/green]")
+        console.print(f"Failed: [red]{stats['failed']}[/red]")
+    
+    console.print(f"Skipped: {stats['skipped']}")
+    console.print()
 
 
 if __name__ == '__main__':

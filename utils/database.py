@@ -161,6 +161,32 @@ class Metric(Base):
     )
 
 
+class AirdropClaim(Base):
+    """Track airdrop claims."""
+    __tablename__ = 'airdrop_claims'
+    
+    id = Column(Integer, primary_key=True)
+    wallet_id = Column(Integer, ForeignKey('wallets.id'), nullable=False)
+    airdrop_name = Column(String(255), nullable=False, index=True)
+    chain = Column(String(50), nullable=False)
+    status = Column(String(50), default='pending', index=True)
+    # Status: pending, eligible, claimed, failed, ineligible
+    
+    amount_claimed = Column(String(100))
+    tx_hash = Column(String(255))
+    checked_at = Column(DateTime)
+    claimed_at = Column(DateTime)
+    error_message = Column(Text)
+    
+    # Relationships
+    wallet = relationship("Wallet", backref="airdrop_claims")
+    
+    __table_args__ = (
+        Index('idx_airdrop_wallet', 'wallet_id', 'airdrop_name'),
+        Index('idx_airdrop_status_chain', 'status', 'chain'),
+    )
+
+
 class DatabaseManager:
     """Manage database connections and sessions."""
     
