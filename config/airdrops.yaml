@@ -1,0 +1,77 @@
+# Airdrop Configuration
+# This file defines available airdrops, their claim windows, eligibility criteria,
+# and claim methods for automated airdrop detection and claiming
+
+airdrops:
+  # Example testnet airdrop for testing
+  example_testnet:
+    name: "Example Testnet Airdrop"
+    chain: "ethereum_sepolia"
+    status: "claimable"  # upcoming, claimable, ended
+    claim_start: "2025-01-01T00:00:00Z"
+    claim_end: "2025-12-31T23:59:59Z"
+    claim_contract: "0x0000000000000000000000000000000000000000"
+    claim_method: "merkle"  # merkle, api, direct
+    eligibility_api: "https://api.example.com/eligibility"
+    min_actions: 3  # minimum actions required
+    required_actions:
+      - stake
+      - swap
+    description: "Example testnet airdrop for testing the claiming system"
+    enabled: true
+    priority: 1
+
+  # Sepolia testnet rewards
+  sepolia_rewards:
+    name: "Sepolia Test Rewards"
+    chain: "ethereum_sepolia"
+    status: "claimable"
+    claim_start: "2024-01-01T00:00:00Z"
+    claim_end: "2026-12-31T23:59:59Z"
+    claim_contract: "0x0000000000000000000000000000000000000001"
+    claim_method: "direct"  # Direct contract call
+    eligibility_api: null
+    min_actions: 5
+    required_actions:
+      - stake
+      - swap
+      - bridge
+    description: "Sepolia testnet participation rewards"
+    enabled: true
+    priority: 2
+
+  # Solana testnet airdrop
+  solana_testnet:
+    name: "Solana Devnet Airdrop"
+    chain: "solana"
+    status: "upcoming"
+    claim_start: "2026-01-01T00:00:00Z"
+    claim_end: "2026-06-01T00:00:00Z"
+    claim_contract: "11111111111111111111111111111111"
+    claim_method: "api"  # API-based claim
+    eligibility_api: "https://api.solana-example.com/check"
+    min_actions: 2
+    required_actions:
+      - stake
+    description: "Solana devnet participation rewards"
+    enabled: true
+    priority: 3
+
+  # Polygon testnet
+  polygon_testnet:
+    name: "Polygon Amoy Airdrop"
+    chain: "polygon_amoy"
+    status: "ended"
+    claim_start: "2024-01-01T00:00:00Z"
+    claim_end: "2024-12-31T23:59:59Z"
+    claim_contract: "0x0000000000000000000000000000000000000002"
+    claim_method: "merkle"
+    eligibility_api: "https://api.polygon-example.com/merkle"
+    min_actions: 4
+    required_actions:
+      - stake
+      - swap
+      - bridge
+    description: "Polygon Amoy testnet rewards (ended)"
+    enabled: false
+    priority: 4
