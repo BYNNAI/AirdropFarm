@@ -160,11 +160,14 @@ class BridgeIntegration:
         amount_wei = self.web3.to_wei(amount, 'ether')
         
         # Prepare destination address (same wallet on destination chain)
+        # LayerZero expects bytes representation of the address
         destination = Web3.to_checksum_address(wallet_address)
-        destination_bytes = destination.encode('utf-8')
+        # Remove '0x' prefix and convert to bytes, then pad to 32 bytes
+        destination_bytes = bytes.fromhex(destination[2:].zfill(64))
         
-        # Prepare payload (simple transfer)
-        payload = self.web3.codec.encode(['address', 'uint256'], [destination, amount_wei])
+        # Prepare payload for LayerZero
+        # Simple payload encoding: address (20 bytes) + amount (32 bytes)
+        payload = destination_bytes[-20:] + amount_wei.to_bytes(32, byteorder='big')
         
         # Adapter params (default)
         adapter_params = b''

@@ -227,7 +227,7 @@ class UniswapIntegration:
                 allowance=current_allowance,
                 required=amount
             )
-            return None  # Already approved
+            return "0x0"  # Return zero hash to indicate already approved
         
         # Build approval transaction
         approve_tx = token_contract.functions.approve(
@@ -334,6 +334,16 @@ class UniswapIntegration:
                     Web3.to_checksum_address(to_token_addr)
                 ]
         
+        # Get token decimals for destination token
+        if not is_eth_out:
+            to_contract = self.web3.eth.contract(
+                address=Web3.to_checksum_address(to_token_addr),
+                abi=ERC20_ABI
+            )
+            to_decimals = to_contract.functions.decimals().call()
+        else:
+            to_decimals = 18
+        
         # Get expected output amount
         try:
             amounts_out = self.router_contract.functions.getAmountsOut(
@@ -417,6 +427,6 @@ class UniswapIntegration:
             'from_token': from_token,
             'to_token': to_token,
             'amount_in': amount_in,
-            'expected_out': expected_out / (10 ** 18),  # Approximate
+            'expected_out': expected_out / (10 ** to_decimals),  # Use correct decimals
             'gas_used': receipt['gasUsed']
         }

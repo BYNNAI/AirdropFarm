@@ -213,14 +213,11 @@ class JupiterIntegration:
             # Try to deserialize as VersionedTransaction
             transaction = VersionedTransaction.from_bytes(swap_transaction_bytes)
             
-            # Sign the transaction
-            signed_tx = VersionedTransaction.populate(
-                transaction.message,
-                [keypair]
-            )
+            # Sign the versioned transaction
+            transaction.sign([keypair])
             
             # Serialize signed transaction
-            serialized_tx = bytes(signed_tx)
+            serialized_tx = bytes(transaction)
         except Exception as e:
             logger.warning("versioned_transaction_failed", error=str(e))
             # Fallback to legacy transaction
