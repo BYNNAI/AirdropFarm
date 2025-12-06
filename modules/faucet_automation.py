@@ -282,17 +282,7 @@ class FaucetWorker:
                 )
                 return True
         
-        # Check if we should skip this faucet claim for anti-detection
-        if self.anti_detection.should_skip_faucet(wallet.address):
-            logger.info(
-                "faucet_skipped_for_anti_detection",
-                wallet=wallet.address,
-                chain=chain,
-                faucet=faucet_name
-            )
-            return False
-        
-        # Check cooldown with over-cooldown jitter
+        # Check cooldown first (more efficient to skip if in cooldown)
         cooldown_hours = faucet_config.get('cooldown_hours', 24)
         extended_cooldown_hours = self.anti_detection.get_overcooldown_delay(
             cooldown_hours * 3600
@@ -312,6 +302,16 @@ class FaucetWorker:
                 chain=chain,
                 faucet=faucet_name,
                 cooldown_until=cooldown_until.isoformat()
+            )
+            return False
+        
+        # Check if we should skip this faucet claim for anti-detection
+        if self.anti_detection.should_skip_faucet(wallet.address):
+            logger.info(
+                "faucet_skipped_for_anti_detection",
+                wallet=wallet.address,
+                chain=chain,
+                faucet=faucet_name
             )
             return False
         

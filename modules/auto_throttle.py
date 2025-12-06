@@ -118,8 +118,8 @@ class AutoThrottle:
         while history and history[0][0] < cutoff:
             history.popleft()
         
-        # Check if we should throttle
-        if is_error and status_code in [429, 500, 502, 503, 504]:
+        # Check if we should throttle based on error status codes
+        if status_code in [429, 500, 502, 503, 504]:
             self._check_and_throttle(identifier)
     
     def _check_and_throttle(self, identifier: str):

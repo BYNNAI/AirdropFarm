@@ -174,9 +174,11 @@ class IPManager:
             rotation_offset = (int(time.time() / (self.ip_sticky_hours * 3600))) % len(self.proxy_list)
             index = (base_index + rotation_offset) % len(self.proxy_list)
         else:
-            # Hash-based selection for individual wallets
-            hash_val = hash(wallet_address + traffic_type + str(int(time.time() / (self.ip_sticky_hours * 3600))))
-            index = abs(hash_val) % len(self.proxy_list)
+            # Hash-based selection for individual wallets using hashlib for consistency
+            import hashlib
+            hash_input = f"{wallet_address}{traffic_type}{int(time.time() / (self.ip_sticky_hours * 3600))}"
+            hash_val = int(hashlib.sha256(hash_input.encode()).hexdigest(), 16)
+            index = hash_val % len(self.proxy_list)
         
         # Add small random offset to avoid patterns
         if len(self.proxy_list) > 1:
