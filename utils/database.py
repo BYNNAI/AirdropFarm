@@ -174,14 +174,23 @@ class DatabaseManager:
         # Ensure data directory exists for SQLite
         if self.database_url.startswith('sqlite'):
             db_path = self.database_url.replace('sqlite:///', '')
-            os.makedirs(os.path.dirname(db_path) if os.path.dirname(db_path) else 'data', exist_ok=True)
+            if db_path and db_path != ':memory:':
+                os.makedirs(os.path.dirname(db_path) if os.path.dirname(db_path) else 'data', exist_ok=True)
+            
+            # SQLite-specific settings
+            self.engine = create_engine(
+                self.database_url,
+                pool_pre_ping=True
+            )
+        else:
+            # PostgreSQL and other databases
+            self.engine = create_engine(
+                self.database_url,
+                pool_pre_ping=True,
+                pool_size=10,
+                max_overflow=20
+            )
         
-        self.engine = create_engine(
-            self.database_url,
-            pool_pre_ping=True,
-            pool_size=10,
-            max_overflow=20
-        )
         self.SessionLocal = sessionmaker(bind=self.engine, autoflush=False)
         
         # Create all tables
