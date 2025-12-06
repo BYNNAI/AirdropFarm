@@ -300,8 +300,11 @@ class UniswapIntegration:
         wallet = Web3.to_checksum_address(wallet_address)
         to_token = Web3.to_checksum_address(to_token)
         
-        # WETH address - use zero address as placeholder for native ETH in path
-        weth = Web3.to_checksum_address(os.getenv(f'WETH_{self.chain.upper()}', '0x' + '00' * 20))
+        # WETH address - must be configured for the chain
+        weth_address = os.getenv(f'WETH_{self.chain.upper()}')
+        if not weth_address:
+            raise ValueError(f"WETH address not configured for chain {self.chain}. Set WETH_{self.chain.upper()} in environment.")
+        weth = Web3.to_checksum_address(weth_address)
         
         # Get expected output amount
         path = [weth, to_token]

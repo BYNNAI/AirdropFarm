@@ -134,6 +134,10 @@ class EVMActionAdapter(ActionAdapter):
         self.rpc_url = rpc_url
         self.web3 = Web3(Web3.HTTPProvider(rpc_url))
         
+        # Initialize wallet manager once for reuse
+        from modules.wallet_manager import WalletManager
+        self.wallet_manager = WalletManager()
+        
         # Initialize protocol integrations (lazy load based on config)
         self.uniswap = None
         self.staking = None
@@ -194,9 +198,7 @@ class EVMActionAdapter(ActionAdapter):
         
         try:
             # Get private key for wallet
-            from modules.wallet_manager import WalletManager
-            wallet_manager = WalletManager()
-            private_key = wallet_manager.get_private_key(wallet.address, wallet.chain)
+            private_key = self.wallet_manager.get_private_key(wallet.address, wallet.chain)
             
             if not private_key:
                 raise ValueError("Could not derive private key for wallet")
@@ -270,9 +272,7 @@ class EVMActionAdapter(ActionAdapter):
         
         try:
             # Get private key for wallet
-            from modules.wallet_manager import WalletManager
-            wallet_manager = WalletManager()
-            private_key = wallet_manager.get_private_key(wallet.address, wallet.chain)
+            private_key = self.wallet_manager.get_private_key(wallet.address, wallet.chain)
             
             if not private_key:
                 raise ValueError("Could not derive private key for wallet")
@@ -357,9 +357,7 @@ class EVMActionAdapter(ActionAdapter):
         
         try:
             # Get private key for wallet
-            from modules.wallet_manager import WalletManager
-            wallet_manager = WalletManager()
-            private_key = wallet_manager.get_private_key(wallet.address, wallet.chain)
+            private_key = self.wallet_manager.get_private_key(wallet.address, wallet.chain)
             
             if not private_key:
                 raise ValueError("Could not derive private key for wallet")
@@ -368,10 +366,16 @@ class EVMActionAdapter(ActionAdapter):
             amount_wei = self.web3.to_wei(amount, 'ether')
             
             # Get destination chain ID from kwargs or config
-            dst_chain_id = kwargs.get('dst_chain_id') or int(os.getenv(f'LAYERZERO_CHAIN_ID_{to_chain.upper()}', '0'))
+            dst_chain_id_str = kwargs.get('dst_chain_id') or os.getenv(f'LAYERZERO_CHAIN_ID_{to_chain.upper()}', '')
+            if not dst_chain_id_str:
+                dst_chain_id = 0
+            else:
+                dst_chain_id = int(dst_chain_id_str)
             
             # Execute bridge based on bridge type
-            if self.bridge.bridge_type == 'layerzero' and dst_chain_id:
+            if self.bridge.bridge_type == 'layerzero':
+                if not dst_chain_id:
+                    raise ValueError(f"LayerZero chain ID not configured for destination chain {to_chain}. Set LAYERZERO_CHAIN_ID_{to_chain.upper()} in environment.")
                 result = await self.bridge.bridge_layerzero(
                     dst_chain_id,
                     amount_wei,
@@ -474,6 +478,10 @@ class SolanaActionAdapter(ActionAdapter):
         self.rpc_url = rpc_url
         self.client = AsyncClient(rpc_url)
         
+        # Initialize wallet manager once for reuse
+        from modules.wallet_manager import WalletManager
+        self.wallet_manager = WalletManager()
+        
         # Initialize protocol integrations
         self.staking = SolanaStakeIntegration(rpc_url)
         self.jupiter = JupiterIntegration(rpc_url, use_devnet='devnet' in rpc_url or 'testnet' in rpc_url)
@@ -503,9 +511,7 @@ class SolanaActionAdapter(ActionAdapter):
         
         try:
             # Get private key for wallet
-            from modules.wallet_manager import WalletManager
-            wallet_manager = WalletManager()
-            private_key = wallet_manager.get_private_key(wallet.address, wallet.chain)
+            private_key = self.wallet_manager.get_private_key(wallet.address, wallet.chain)
             
             if not private_key:
                 raise ValueError("Could not derive private key for wallet")
@@ -575,9 +581,7 @@ class SolanaActionAdapter(ActionAdapter):
         
         try:
             # Get private key for wallet
-            from modules.wallet_manager import WalletManager
-            wallet_manager = WalletManager()
-            private_key = wallet_manager.get_private_key(wallet.address, wallet.chain)
+            private_key = self.wallet_manager.get_private_key(wallet.address, wallet.chain)
             
             if not private_key:
                 raise ValueError("Could not derive private key for wallet")

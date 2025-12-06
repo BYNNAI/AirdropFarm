@@ -34,12 +34,16 @@ class JupiterIntegration:
         self.rpc_url = rpc_url
         
         # Jupiter API endpoints
+        # IMPORTANT: Jupiter does not provide a testnet/devnet API
+        # All Jupiter API calls will use mainnet pricing and routes
+        # For true testnet trading, consider using Raydium testnet instead
+        self.api_base = "https://quote-api.jup.ag/v6"
+        
         if use_devnet:
-            # Note: Jupiter doesn't have a public devnet API, so we'll use a mock approach
-            self.api_base = "https://quote-api.jup.ag/v6"
-            logger.warning("Jupiter devnet API not available, using mainnet API structure")
-        else:
-            self.api_base = "https://quote-api.jup.ag/v6"
+            logger.warning(
+                "jupiter_mainnet_api_only",
+                message="Jupiter API only supports mainnet. Quotes and routes will be from mainnet even though RPC is devnet/testnet. For testnet DEX functionality, consider Raydium or other testnet-compatible DEXes."
+            )
         
         self.slippage_bps = int(float(os.getenv('SLIPPAGE_TOLERANCE', '0.03')) * 10000)
         

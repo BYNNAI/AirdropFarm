@@ -87,7 +87,11 @@ class StakingIntegration:
             Result dictionary with tx_hash and staked amount
         """
         wallet = Web3.to_checksum_address(wallet_address)
-        referral_addr = Web3.to_checksum_address(referral) if referral else Web3.to_checksum_address('0x' + '00' * 20)
+        referral_addr = Web3.to_checksum_address(referral) if referral else None
+        
+        # Use zero address if no referral provided
+        if not referral_addr:
+            referral_addr = Web3.to_checksum_address('0x' + '00' * 20)
         
         # Check balance
         balance = self.web3.eth.get_balance(wallet)

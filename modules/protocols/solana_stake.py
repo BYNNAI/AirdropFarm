@@ -58,11 +58,13 @@ class SolanaStakeIntegration:
             Result dictionary with transaction signature and stake account
         """
         # Note: This is a simplified implementation for testnet
-        # In production, you would use the full stake program instructions
+        # IMPORTANT: This only creates a stake account but does NOT initialize or delegate it
+        # Full staking requires stake program instructions not exposed in solders 0.21.0
+        # For production use, upgrade to newer solders version or use @solana/web3.js
         
         logger.warning(
-            "solana_staking_simplified",
-            message="Using simplified staking implementation (manual instruction construction not available in solders 0.21.0)"
+            "solana_staking_incomplete",
+            message="This implementation only creates stake accounts. Stake initialization and delegation are NOT performed due to solders 0.21.0 limitations. Upgrade solders or use @solana/web3.js for full staking functionality."
         )
         
         # Create new stake account

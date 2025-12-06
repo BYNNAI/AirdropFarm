@@ -195,8 +195,9 @@ class BridgeIntegration:
         """
         wallet = Web3.to_checksum_address(wallet_address)
         
-        # Encode destination address
-        to_address = wallet.encode('utf-8')
+        # Encode destination address (LayerZero expects address as bytes)
+        # Remove '0x' prefix and convert hex to bytes
+        to_address = bytes.fromhex(wallet[2:] if wallet.startswith('0x') else wallet)
         
         # Estimate fees
         adapter_params = b''
