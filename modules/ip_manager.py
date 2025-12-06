@@ -12,6 +12,7 @@ License: MIT
 import os
 import time
 import random
+import hashlib
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -175,7 +176,6 @@ class IPManager:
             index = (base_index + rotation_offset) % len(self.proxy_list)
         else:
             # Hash-based selection for individual wallets using hashlib for consistency
-            import hashlib
             hash_input = f"{wallet_address}{traffic_type}{int(time.time() / (self.ip_sticky_hours * 3600))}"
             hash_val = int(hashlib.sha256(hash_input.encode()).hexdigest(), 16)
             index = hash_val % len(self.proxy_list)

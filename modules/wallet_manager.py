@@ -10,6 +10,8 @@ License: MIT
 """
 
 import os
+import base64
+import hashlib
 from typing import List, Optional, Dict, Tuple
 from cryptography.fernet import Fernet
 from mnemonic import Mnemonic
@@ -70,9 +72,6 @@ class WalletManager:
         Returns:
             Valid Fernet key bytes
         """
-        import hashlib
-        import base64
-        
         # Hash and encode to get 32-byte key
         hashed = hashlib.sha256(key.encode()).digest()
         return base64.urlsafe_b64encode(hashed)
@@ -162,8 +161,6 @@ class WalletManager:
         
         # For Solana, we'll use a simple derivation from the seed
         # In production, use proper BIP44 Solana derivation (m/44'/501'/0'/0')
-        import hashlib
-        
         # Derive a deterministic seed for this index
         seed_with_index = f"{self.seed_mnemonic}:{index}:solana"
         derived_seed = hashlib.sha256(seed_with_index.encode()).digest()
