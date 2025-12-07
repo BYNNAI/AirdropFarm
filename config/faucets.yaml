@@ -1,6 +1,10 @@
 # Multi-chain Faucet Configuration
 # This file defines faucet endpoints, cooldowns, limits, and captcha requirements
 # for automated testnet token acquisition across multiple blockchain networks
+#
+# NOTE: Most faucets listed here require web-based interaction through browser interfaces.
+# Direct API access is often restricted or requires authentication (OAuth, API keys).
+# This configuration documents the known faucet services, their requirements, and limitations.
 
 chains:
   # ==================== Ethereum Testnets ====================
@@ -10,56 +14,99 @@ chains:
     native_token: "ETH"
     faucets:
       - name: "Alchemy Sepolia Faucet"
-        url: "https://sepoliafaucet.com"
-        api_endpoint: "/api/faucet"
+        url: "https://www.alchemy.com/faucets/ethereum-sepolia"
+        api_endpoint: null  # No public API - requires Alchemy account login
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.5"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
+        captcha_site_key: null  # Site-specific, obtain from page
+        requires_auth: true
+        auth_type: "oauth"  # Requires Alchemy login
+        enabled: false  # Disabled - requires authentication
         priority: 1
+        notes: "Requires Alchemy account login. Not suitable for automation without API access."
 
       - name: "Infura Sepolia Faucet"
         url: "https://www.infura.io/faucet/sepolia"
-        api_endpoint: "/api/claim"
+        api_endpoint: null  # No public API - requires Infura account
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.5"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
+        captcha_site_key: null
+        requires_auth: true
+        auth_type: "oauth"  # Requires Infura login
+        enabled: false  # Disabled - requires authentication
         priority: 2
+        notes: "Requires Infura account. Web-based interface only."
 
-      - name: "Chainstack Sepolia Faucet"
-        url: "https://faucet.chainstack.com/sepolia-faucet"
-        api_endpoint: "/api/v1/faucet"
+      - name: "QuickNode Sepolia Faucet"
+        url: "https://faucet.quicknode.com/ethereum/sepolia"
+        api_endpoint: null  # Web-based drip interface
         method: "POST"
-        amount: "0.1"
-        cooldown_hours: 12
-        daily_limit: 2
-        requires_captcha: false
-        enabled: true
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
+        amount: "0.05"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 3
+        notes: "Web-based drip interface. Requires manual interaction with Twitter verification."
+
+      - name: "Google Cloud Sepolia Faucet"
+        url: "https://cloud.google.com/application/web3/faucet/ethereum/sepolia"
+        api_endpoint: null  # Requires Google Cloud account
+        method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
+        amount: "0.05"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: false
+        requires_auth: true
+        auth_type: "oauth"  # Requires Google Cloud login
+        enabled: false  # Disabled - requires authentication
+        priority: 4
+        notes: "Requires Google Cloud account. Not suitable for automation."
 
   ethereum_goerli:
     name: "Ethereum Goerli"
     chain_id: 5
     native_token: "ETH"
     faucets:
-      - name: "Alchemy Goerli Faucet"
+      - name: "Goerli Deprecated"
         url: "https://goerlifaucet.com"
-        api_endpoint: "/api/faucet"
+        api_endpoint: null
         method: "POST"
-        amount: "0.5"
+        amount: "0"
         cooldown_hours: 24
-        daily_limit: 1
-        requires_captcha: true
-        captcha_type: "recaptcha_v2"
-        enabled: true
+        daily_limit: 0
+        requires_captcha: false
+        enabled: false  # Goerli is deprecated
         priority: 1
+        notes: "Goerli testnet is deprecated. Use Sepolia instead."
 
   # ==================== Polygon ====================
   polygon_amoy:
@@ -68,27 +115,44 @@ chains:
     native_token: "MATIC"
     faucets:
       - name: "Polygon Faucet"
-        url: "https://faucet.polygon.technology"
-        api_endpoint: "/api/faucet"
+        url: "https://faucet.polygon.technology/"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "1.0"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 1
+        notes: "Official Polygon faucet. Web-based with reCAPTCHA. Requires Twitter verification."
 
-      - name: "Alchemy Polygon Faucet"
+      - name: "Alchemy Polygon Amoy Faucet"
         url: "https://www.alchemy.com/faucets/polygon-amoy"
-        api_endpoint: "/api/claim"
+        api_endpoint: null  # Requires Alchemy account
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.5"
         cooldown_hours: 24
         daily_limit: 1
-        requires_captcha: false
-        enabled: true
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: true
+        auth_type: "oauth"
+        enabled: false  # Disabled - requires authentication
         priority: 2
+        notes: "Requires Alchemy account login."
 
   # ==================== Arbitrum ====================
   arbitrum_sepolia:
@@ -96,45 +160,62 @@ chains:
     chain_id: 421614
     native_token: "ETH"
     faucets:
-      - name: "Arbitrum Sepolia Faucet"
-        url: "https://faucet.quicknode.com/arbitrum/sepolia"
-        api_endpoint: "/api/faucet"
+      - name: "Alchemy Arbitrum Sepolia Faucet"
+        url: "https://www.alchemy.com/faucets/arbitrum-sepolia"
+        api_endpoint: null  # Requires Alchemy account
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.1"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
+        captcha_site_key: null
+        requires_auth: true
+        auth_type: "oauth"
+        enabled: false  # Disabled - requires authentication
         priority: 1
+        notes: "Requires Alchemy account login."
 
-      - name: "L2Faucet Arbitrum"
-        url: "https://l2faucet.com/arbitrum"
-        api_endpoint: "/api/claim"
+      - name: "QuickNode Arbitrum Sepolia Faucet"
+        url: "https://faucet.quicknode.com/arbitrum/sepolia"
+        api_endpoint: null  # Web-based interface
         method: "POST"
-        amount: "0.05"
-        cooldown_hours: 12
-        daily_limit: 2
-        requires_captcha: false
-        enabled: true
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
+        amount: "0.01"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 2
+        notes: "Web-based drip interface with Twitter verification."
 
   arbitrum_goerli:
     name: "Arbitrum Goerli"
     chain_id: 421613
     native_token: "ETH"
     faucets:
-      - name: "Arbitrum Goerli Faucet"
+      - name: "Arbitrum Goerli Deprecated"
         url: "https://faucet.quicknode.com/arbitrum/goerli"
-        api_endpoint: "/api/faucet"
+        api_endpoint: null
         method: "POST"
-        amount: "0.1"
+        amount: "0"
         cooldown_hours: 24
-        daily_limit: 1
-        requires_captcha: true
-        captcha_type: "recaptcha_v2"
-        enabled: true
+        daily_limit: 0
+        requires_captcha: false
+        enabled: false  # Deprecated - use Sepolia
         priority: 1
+        notes: "Arbitrum Goerli is deprecated. Use Arbitrum Sepolia instead."
 
   # ==================== Base ====================
   base_sepolia:
@@ -142,28 +223,111 @@ chains:
     chain_id: 84532
     native_token: "ETH"
     faucets:
-      - name: "Base Sepolia Faucet"
-        url: "https://faucet.quicknode.com/base/sepolia"
-        api_endpoint: "/api/faucet"
+      - name: "Alchemy Base Sepolia Faucet"
+        url: "https://www.alchemy.com/faucets/base-sepolia"
+        api_endpoint: null  # Requires Alchemy account
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.1"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
+        captcha_site_key: null
+        requires_auth: true
+        auth_type: "oauth"
+        enabled: false  # Disabled - requires authentication
         priority: 1
+        notes: "Requires Alchemy account login."
 
-      - name: "Coinbase Base Faucet"
+      - name: "Coinbase Base Sepolia Faucet"
         url: "https://www.coinbase.com/faucets/base-ethereum-sepolia-faucet"
-        api_endpoint: "/api/claim"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.05"
         cooldown_hours: 24
         daily_limit: 1
-        requires_captcha: false
-        enabled: true
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 2
+        notes: "Coinbase-hosted faucet. Web-based interface with wallet connection."
+
+      - name: "QuickNode Base Sepolia Faucet"
+        url: "https://faucet.quicknode.com/base/sepolia"
+        api_endpoint: null  # Web-based interface
+        method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
+        amount: "0.05"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
+        priority: 3
+        notes: "Web-based drip interface with Twitter verification."
+
+  # ==================== Optimism ====================
+  optimism_sepolia:
+    name: "Optimism Sepolia"
+    chain_id: 11155420
+    native_token: "ETH"
+    faucets:
+      - name: "Alchemy Optimism Sepolia Faucet"
+        url: "https://www.alchemy.com/faucets/optimism-sepolia"
+        api_endpoint: null  # Requires Alchemy account
+        method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
+        amount: "0.5"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: true
+        auth_type: "oauth"
+        enabled: false  # Disabled - requires authentication
+        priority: 1
+        notes: "Requires Alchemy account login."
+
+      - name: "QuickNode Optimism Sepolia Faucet"
+        url: "https://faucet.quicknode.com/optimism/sepolia"
+        api_endpoint: null  # Web-based interface
+        method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
+        amount: "0.05"
+        cooldown_hours: 24
+        daily_limit: 1
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
+        priority: 2
+        notes: "Web-based drip interface with Twitter verification."
 
   # ==================== BNB Chain ====================
   bnb_testnet:
@@ -173,26 +337,43 @@ chains:
     faucets:
       - name: "BNB Testnet Faucet"
         url: "https://testnet.bnbchain.org/faucet-smart"
-        api_endpoint: "/api/faucet"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.5"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 1
+        notes: "Official BNB testnet faucet. Web-based interface with wallet connection."
 
-      - name: "Moralis BNB Faucet"
-        url: "https://moralis.io/faucets/bsc-testnet"
-        api_endpoint: "/api/claim"
+      - name: "QuickNode BNB Testnet Faucet"
+        url: "https://faucet.quicknode.com/binance-smart-chain/bnb-testnet"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.1"
         cooldown_hours: 24
         daily_limit: 1
-        requires_captcha: false
-        enabled: true
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 2
+        notes: "Web-based drip interface with Twitter verification."
 
   # ==================== Avalanche ====================
   avalanche_fuji:
@@ -201,27 +382,44 @@ chains:
     native_token: "AVAX"
     faucets:
       - name: "Avalanche Official Faucet"
-        url: "https://faucet.avax.network"
-        api_endpoint: "/api/faucet"
+        url: "https://faucet.avax.network/"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "2.0"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 1
+        notes: "Official Avalanche faucet. Web-based with coupon code system."
 
       - name: "ChainLink Fuji Faucet"
         url: "https://faucets.chain.link/fuji"
-        api_endpoint: "/api/claim"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "1.0"
         cooldown_hours: 24
         daily_limit: 1
-        requires_captcha: false
-        enabled: true
+        requires_captcha: true
+        captcha_type: "recaptcha_v2"
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 2
+        notes: "ChainLink faucet for Fuji testnet. Web-based interface with wallet connection."
 
   # ==================== Fantom ====================
   fantom_testnet:
@@ -231,58 +429,122 @@ chains:
     faucets:
       - name: "Fantom Testnet Faucet"
         url: "https://faucet.fantom.network"
-        api_endpoint: "/api/faucet"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "10.0"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
         priority: 1
+        notes: "Official Fantom testnet faucet. Web-based interface with reCAPTCHA."
 
   # ==================== Solana ====================
   solana_devnet:
     name: "Solana Devnet"
     native_token: "SOL"
     faucets:
-      - name: "Solana Official Devnet Faucet"
-        url: "https://faucet.solana.com"
-        api_endpoint: "/api/faucet"
-        method: "POST"
+      - name: "Solana CLI Airdrop"
+        url: null  # Uses Solana CLI tool
+        api_endpoint: null  # Command: solana airdrop 2 <ADDRESS> --url devnet
+        method: "CLI"
+        headers: {}
+        payload_format: "cli"
+        address_field: "address"
         amount: "2.0"
+        cooldown_hours: 0  # No cooldown for CLI
+        daily_limit: 10  # Rate limited by RPC
+        requires_captcha: false
+        requires_auth: false
+        auth_type: "none"
+        enabled: true  # Can be automated via CLI
+        priority: 1
+        notes: "Use Solana CLI: `solana airdrop 2 <ADDRESS> --url devnet`. Rate limited by RPC endpoint."
+
+      - name: "Solana Web Faucet"
+        url: "https://faucet.solana.com/"
+        api_endpoint: null  # Web-based interface
+        method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
+        amount: "1.0"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: false
-        enabled: true
-        priority: 1
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface preferred for manual use
+        priority: 2
+        notes: "Web-based Solana faucet. Prefer CLI method for automation."
 
-      - name: "QuickNode Solana Faucet"
+      - name: "QuickNode Solana Devnet Faucet"
         url: "https://faucet.quicknode.com/solana/devnet"
-        api_endpoint: "/api/claim"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "0.5"
-        cooldown_hours: 12
-        daily_limit: 2
+        cooldown_hours: 24
+        daily_limit: 1
         requires_captcha: true
         captcha_type: "recaptcha_v2"
-        enabled: true
-        priority: 2
+        captcha_site_key: null
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - web interface only
+        priority: 3
+        notes: "Web-based drip interface with Twitter verification."
 
   solana_testnet:
     name: "Solana Testnet"
     native_token: "SOL"
     faucets:
-      - name: "Solana Official Testnet Faucet"
-        url: "https://faucet.solana.com"
-        api_endpoint: "/api/faucet"
+      - name: "Solana CLI Airdrop Testnet"
+        url: null  # Uses Solana CLI tool
+        api_endpoint: null  # Command: solana airdrop 1 <ADDRESS> --url testnet
+        method: "CLI"
+        headers: {}
+        payload_format: "cli"
+        address_field: "address"
+        amount: "1.0"
+        cooldown_hours: 0  # No cooldown for CLI
+        daily_limit: 10  # Rate limited by RPC
+        requires_captcha: false
+        requires_auth: false
+        auth_type: "none"
+        enabled: true  # Can be automated via CLI
+        priority: 1
+        notes: "Use Solana CLI: `solana airdrop 1 <ADDRESS> --url testnet`. Rate limited by RPC endpoint."
+
+      - name: "Solana Web Faucet Testnet"
+        url: "https://faucet.solana.com/"
+        api_endpoint: null  # Web-based interface
         method: "POST"
+        headers:
+          Content-Type: "application/json"
+        payload_format: "json"
+        address_field: "address"
         amount: "1.0"
         cooldown_hours: 24
         daily_limit: 1
         requires_captcha: false
-        enabled: true
-        priority: 1
+        requires_auth: false
+        auth_type: "none"
+        enabled: false  # Disabled - prefer CLI method
+        priority: 2
+        notes: "Web-based Solana faucet. Prefer CLI method for automation."
 
   # ==================== Aptos ====================
   aptos_testnet:

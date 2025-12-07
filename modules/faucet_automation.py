@@ -424,21 +424,54 @@ class FaucetWorker:
         Returns:
             True if successful
         """
-        url = faucet_config['url']
-        if 'api_endpoint' in faucet_config:
-            url = url.rstrip('/') + '/' + faucet_config['api_endpoint'].lstrip('/')
-        
         method = faucet_config.get('method', 'POST')
         
-        # Build request payload
+        # Handle CLI-based faucets (like Solana)
+        if method == 'CLI':
+            logger.info(
+                "faucet_cli_method",
+                address=address,
+                faucet=faucet_config['name'],
+                notes=faucet_config.get('notes', '')
+            )
+            # CLI faucets require external tooling and are not automated here
+            return False
+        
+        # Skip faucets without URLs or endpoints
+        if not faucet_config.get('url'):
+            logger.warning(
+                "faucet_no_url",
+                faucet=faucet_config['name']
+            )
+            return False
+        
+        # Build URL
+        url = faucet_config['url']
+        api_endpoint = faucet_config.get('api_endpoint')
+        if api_endpoint:
+            url = url.rstrip('/') + '/' + api_endpoint.lstrip('/')
+        
+        # Get payload format and address field name
+        payload_format = faucet_config.get('payload_format', 'json')
+        address_field = faucet_config.get('address_field', 'address')
+        
+        # Build request payload with configurable address field
         payload = {
-            'address': address,
-            'wallet': address
+            address_field: address
         }
         
+        # Add alternative address fields for compatibility
+        if address_field != 'address':
+            payload['address'] = address
+        if address_field != 'wallet':
+            payload['wallet'] = address
+        
+        # Add captcha token if present
         if captcha_token:
             payload['captcha'] = captcha_token
             payload['g-recaptcha-response'] = captcha_token
+            payload['h-captcha-response'] = captcha_token  # For hCaptcha
+            payload['cf-turnstile-response'] = captcha_token  # For Cloudflare Turnstile
         
         # Get anti-detection request config
         request_config = self.anti_detection.get_request_config(
@@ -460,6 +493,10 @@ class FaucetWorker:
         proxy = request_config.get('proxy') or self._get_next_proxy()
         headers = request_config.get('headers', {})
         
+        # Merge custom headers from faucet config
+        if 'headers' in faucet_config and faucet_config['headers']:
+            headers.update(faucet_config['headers'])
+        
         # Add jitter before request
         if self.config.global_settings.get('enable_jitter', True):
             jitter_min = self.config.global_settings.get('jitter_min', 1)
@@ -473,75 +510,34 @@ class FaucetWorker:
         async with aiohttp.ClientSession(timeout=timeout) as session:
             try:
                 if method == 'POST':
-                    async with session.post(
-                        url,
-                        json=payload,
-                        proxy=proxy,
-                        headers=headers
-                    ) as response:
-                        # Record request outcome for auto-throttle
-                        success = response.status in [200, 201]
-                        self.anti_detection.record_request_outcome(
-                            identifier=f"faucet_{address[:10]}",
-                            success=success,
-                            status_code=response.status
-                        )
-                        
-                        # Handle specific status codes
-                        if response.status == 429:
-                            error_text = await response.text()
-                            logger.warning(
-                                "faucet_rate_limited",
-                                url=url,
-                                response_body=error_text[:200]
-                            )
-                            raise Exception(f"Rate limited: {error_text[:100]}")
-                        elif response.status >= 500:
-                            error_text = await response.text()
-                            logger.error(
-                                "faucet_server_error",
-                                url=url,
-                                status=response.status,
-                                response_body=error_text[:200]
-                            )
-                            raise Exception(f"Server error {response.status}: {error_text[:100]}")
-                        
-                        return success
+                    # Choose content type based on payload format
+                    if payload_format == 'form':
+                        # Send as form data
+                        async with session.post(
+                            url,
+                            data=payload,
+                            proxy=proxy,
+                            headers=headers
+                        ) as response:
+                            return await self._handle_faucet_response(response, url, address)
+                    else:
+                        # Send as JSON (default)
+                        async with session.post(
+                            url,
+                            json=payload,
+                            proxy=proxy,
+                            headers=headers
+                        ) as response:
+                            return await self._handle_faucet_response(response, url, address)
                 else:
+                    # GET request
                     async with session.get(
                         url,
                         params=payload,
                         proxy=proxy,
                         headers=headers
                     ) as response:
-                        # Record request outcome for auto-throttle
-                        success = response.status in [200, 201]
-                        self.anti_detection.record_request_outcome(
-                            identifier=f"faucet_{address[:10]}",
-                            success=success,
-                            status_code=response.status
-                        )
-                        
-                        # Handle specific status codes
-                        if response.status == 429:
-                            error_text = await response.text()
-                            logger.warning(
-                                "faucet_rate_limited",
-                                url=url,
-                                response_body=error_text[:200]
-                            )
-                            raise Exception(f"Rate limited: {error_text[:100]}")
-                        elif response.status >= 500:
-                            error_text = await response.text()
-                            logger.error(
-                                "faucet_server_error",
-                                url=url,
-                                status=response.status,
-                                response_body=error_text[:200]
-                            )
-                            raise Exception(f"Server error {response.status}: {error_text[:100]}")
-                        
-                        return response.status in [200, 201]
+                        return await self._handle_faucet_response(response, url, address)
             
             except aiohttp.ClientError as e:
                 logger.warning(
@@ -550,6 +546,80 @@ class FaucetWorker:
                     error=str(e)
                 )
                 return False
+    
+    async def _handle_faucet_response(
+        self,
+        response: aiohttp.ClientResponse,
+        url: str,
+        address: str
+    ) -> bool:
+        """Handle and parse faucet response.
+        
+        Args:
+            response: HTTP response object
+            url: Request URL
+            address: Wallet address
+            
+        Returns:
+            True if successful
+        """
+        # Record request outcome for auto-throttle
+        success = response.status in [200, 201]
+        self.anti_detection.record_request_outcome(
+            identifier=f"faucet_{address[:10]}",
+            success=success,
+            status_code=response.status
+        )
+        
+        # Handle specific status codes
+        if response.status == 429:
+            error_text = await response.text()
+            logger.warning(
+                "faucet_rate_limited",
+                url=url,
+                response_body=error_text[:200]
+            )
+            raise Exception(f"Rate limited: {error_text[:100]}")
+        elif response.status >= 500:
+            error_text = await response.text()
+            logger.error(
+                "faucet_server_error",
+                url=url,
+                status=response.status,
+                response_body=error_text[:200]
+            )
+            raise Exception(f"Server error {response.status}: {error_text[:100]}")
+        elif response.status >= 400:
+            # Try to extract error message from response
+            try:
+                error_text = await response.text()
+                error_json = await response.json() if response.content_type == 'application/json' else None
+                error_msg = error_json.get('error', error_text[:100]) if error_json else error_text[:100]
+            except:
+                error_msg = f"HTTP {response.status}"
+            
+            logger.warning(
+                "faucet_request_failed",
+                url=url,
+                status=response.status,
+                error=error_msg
+            )
+            raise Exception(f"Faucet request failed: {error_msg}")
+        
+        # Log successful response for debugging
+        if success:
+            try:
+                response_text = await response.text()
+                logger.info(
+                    "faucet_request_success",
+                    url=url,
+                    status=response.status,
+                    response_preview=response_text[:200] if response_text else "empty"
+                )
+            except:
+                pass
+        
+        return success
 
 
 class FaucetOrchestrator:
