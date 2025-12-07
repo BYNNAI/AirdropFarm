@@ -1,4 +1,4 @@
-# Airdrop Farming
+# AirdropFarm
 
 🤖 **Sophisticated multi-chain testnet automation by BYNNΛI**
 
