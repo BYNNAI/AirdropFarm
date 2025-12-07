@@ -38,11 +38,20 @@ This system is designed for **testnet environments only**. Always comply with pr
 - **Human-Like Timing**: Randomized delays, jitter, and shard-based staggering
 
 ### 🎯 Eligibility Actions
-- **Staking**: Automated token staking with validator selection
-- **Swapping**: DEX integration for token swaps with slippage protection
-- **Bridging**: Cross-chain asset transfers via bridge protocols
+- **Staking**: Real staking via Lido, native validators (Web3.py/Solana)
+- **Swapping**: Uniswap V3, Jupiter aggregator with slippage protection
+- **Bridging**: LayerZero, Stargate, native L2 bridges
+- **Real Transactions**: Actual on-chain transactions with real tx hashes
+- **Balance Queries**: Live blockchain balance checking via RPC
 - **Human Behavior**: Timing jitter, parameter variance, per-wallet cooldowns
 - **Pre-Flight Checks**: Automatic balance validation before actions
+
+### 🎁 Airdrop Claiming
+- **Airdrop Registry**: YAML-based configuration for known airdrops
+- **Eligibility Checking**: Merkle proof verification, API checks, on-chain queries
+- **Automated Claims**: Execute claim transactions with human-like behavior
+- **Multi-Method Support**: Direct contract calls, API-based claims, merkle claims
+- **Claim Tracking**: Database persistence of all claim attempts and results
 
 ### 📊 Observability & Resilience
 - **Structured Logging**: JSON logs with wallet, chain, action, tx_hash, duration, error class
@@ -90,6 +99,8 @@ This system is designed for **testnet environments only**. Always comply with pr
 - **SQLAlchemy**: Database ORM with SQLite/PostgreSQL support
 - **Web3.py**: Ethereum and EVM chain interactions
 - **Solana/Solders**: Solana blockchain integration
+- **Jupiter API**: Solana swap aggregator integration
+- **LayerZero SDK**: Cross-chain bridging protocol
 - **Structlog**: Structured JSON logging
 - **Click + Rich**: Beautiful CLI interface
 - **AsyncIO**: Asynchronous task execution
@@ -107,8 +118,8 @@ This system is designed for **testnet environments only**. Always comply with pr
 
 ```bash
 # Clone the repository
-git clone https://github.com/theoraclescript/airdrop-farming.git
-cd airdrop-farming
+git clone https://github.com/BYNNAI/airdrop-farming-bot.git
+cd airdrop-farming-bot
 
 # Create virtual environment
 python3 -m venv venv
@@ -122,6 +133,34 @@ cp .env.example .env
 
 # Edit .env with your settings (see Configuration section)
 nano .env  # or use your preferred editor
+```
+
+## 🚀 Quick Start
+
+```bash
+# 1. Generate seed phrase
+python main.py seed --generate
+
+# 2. Configure .env file
+cp .env.example .env
+nano .env  # Add your seed and settings
+
+# 3. Create wallets
+python main.py create-wallets --count 100 --chains evm,solana
+
+# 4. Fund wallets via faucets
+python main.py fund-wallets
+
+# 5. Run eligibility actions (stake, swap, bridge)
+python main.py run-actions --action all
+
+# 6. Check and claim airdrops
+python main.py list-airdrops
+python main.py claim-airdrops --check-only
+python main.py claim-airdrops
+
+# 7. Monitor progress
+python main.py stats
 ```
 
 ## ⚙️ Configuration
@@ -217,6 +256,27 @@ You can edit this file to:
 - Add new faucet endpoints
 - Change priority ordering
 
+### 4. Airdrop Configuration
+
+Airdrops are configured in `config/airdrops.yaml`:
+
+```yaml
+airdrops:
+  example_airdrop:
+    name: "Example Protocol Airdrop"
+    chain: "ethereum_sepolia"
+    status: "claimable"  # upcoming, claimable, ended
+    claim_start: "2025-01-01T00:00:00Z"
+    claim_end: "2025-06-01T00:00:00Z"
+    claim_contract: "0x..."
+    claim_method: "merkle"  # merkle, api, direct
+    eligibility_api: "https://api.example.com/eligibility"
+    required_actions:
+      - stake
+      - swap
+      - bridge
+```
+
 ## 🚀 Usage
 
 ### Create Wallets
@@ -295,6 +355,30 @@ python main.py run-actions --chain ethereum_sepolia --action swap
 python main.py run-actions --action all --concurrency 5
 ```
 
+### Claim Airdrops
+
+Check eligibility and claim available airdrops:
+
+```bash
+# List all configured airdrops
+python main.py list-airdrops
+
+# Check eligibility for all wallets (without claiming)
+python main.py claim-airdrops --check-only
+
+# Claim all available airdrops
+python main.py claim-airdrops
+
+# Claim specific airdrop
+python main.py claim-airdrops --airdrop layerzero_testnet
+
+# Claim for specific shard
+python main.py claim-airdrops --shard 0
+
+# Claim for specific chain
+python main.py claim-airdrops --chain ethereum_sepolia
+```
+
 ### Check Status
 
 View statistics and service status:
@@ -323,6 +407,7 @@ python main.py --db-url postgresql://user:pass@localhost/db stats
 airdrop-farming/
 ├── config/                      # Configuration files
 │   ├── faucets.yaml            # Multi-chain faucet configuration
+│   ├── airdrops.yaml           # Airdrop definitions and claim configs
 │   ├── settings.py             # Legacy settings (being deprecated)
 │   └── __init__.py
 ├── modules/                     # Core functionality
@@ -330,6 +415,12 @@ airdrop-farming/
 │   ├── faucet_automation.py    # Faucet orchestration and workers
 │   ├── captcha_broker.py       # Pluggable captcha solving
 │   ├── action_pipeline.py      # Eligibility actions (stake, swap, bridge)
+│   ├── airdrop_claimer.py      # Airdrop claiming automation
+│   ├── protocols/              # Protocol integrations
+│   │   ├── uniswap.py          # Uniswap V3 integration
+│   │   ├── jupiter.py          # Jupiter aggregator
+│   │   ├── staking.py          # Staking contracts
+│   │   └── bridges.py          # Bridge protocols
 │   └── __init__.py
 ├── utils/                       # Utility functions
 │   ├── database.py             # SQLAlchemy models and DB management
@@ -535,6 +626,7 @@ OVER_COOLDOWN_JITTER_MAX=0.15
 - ✅ Polygon Amoy
 - ✅ Arbitrum Sepolia & Goerli
 - ✅ Base Sepolia
+- ✅ Optimism Sepolia
 - ✅ BNB Smart Chain Testnet
 - ✅ Avalanche Fuji
 - ✅ Fantom Testnet
@@ -626,7 +718,7 @@ MIT License - See LICENSE file for details
 
 ## 🔗 Resources
 
-- [Repository](https://github.com/theoraclescript/airdrop-farming)
+- [Repository](https://github.com/BYNNAI/airdrop-farming-bot)
 - [Testnet Faucets Directory](https://faucetlink.to/)
 - [BIP39 Mnemonic Generator](https://iancoleman.io/bip39/)
 - [Web3.py Documentation](https://web3py.readthedocs.io/)
@@ -637,12 +729,24 @@ MIT License - See LICENSE file for details
 **By BYNNΛI**
 
 For issues and questions:
-- Open a [GitHub Issue](https://github.com/theoraclescript/airdrop-farming/issues)
+- Open a [GitHub Issue](https://github.com/BYNNAI/airdrop-farming-bot/issues)
 - Contact via [LinkTree](https://linktr.ee/oraclescript)
 
 ## 📝 Changelog
 
-### Version 2.0.0 (Current)
+### Version 2.1.0 (Current)
+- ✨ **Airdrop Claiming**: New module for automated airdrop detection and claiming
+- ✨ **Real Transactions**: Replaced mock implementations with actual blockchain calls
+  - Uniswap V3 integration for swaps
+  - Jupiter aggregator for Solana swaps
+  - LayerZero/Stargate bridge integration
+  - Real staking contract interactions
+- ✨ **Verified Faucets**: Updated faucet endpoints with real, working URLs
+- ✨ **Optimism Sepolia**: Added new network support
+- ✨ **Eligibility Checking**: Merkle proof and API-based eligibility verification
+- 🔧 **Improved Error Handling**: Better faucet response parsing and error messages
+
+### Version 2.0.0
 - ✨ Complete rewrite with production-grade architecture
 - ✨ Multi-chain faucet automation (10+ networks)
 - ✨ HD wallet derivation with encrypted seed management
